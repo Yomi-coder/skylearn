@@ -99,9 +99,24 @@ class UploadFormVideo(forms.ModelForm):
         fields = (
             "title",
             "video",
+            "video_url",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["title"].widget.attrs.update({"class": "form-control"})
         self.fields["video"].widget.attrs.update({"class": "form-control"})
+        self.fields["video_url"].widget.attrs.update({"class": "form-control", "placeholder": "https://example.com/video"})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        video = cleaned_data.get("video")
+        video_url = cleaned_data.get("video_url")
+
+        if not video and not video_url:
+            raise forms.ValidationError("Please upload a video file or provide a video URL.")
+
+        if video and video_url:
+            raise forms.ValidationError("Please provide either a video file or a video URL, not both.")
+
+        return cleaned_data
